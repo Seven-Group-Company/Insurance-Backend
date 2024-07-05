@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id            Int           @id @default(autoincrement())
+  name          String
+  email         String        @unique
+  createdAt     DateTime      @default(now())
+  active        Boolean       @default(true)
+  createdBy     Int
+  updatedAt     DateTime?
+  updatedBy     Int?
+  userType      role          @default(employee)
+  employeeInfo  employeeInfo?
+  otp           otp?
+  accessLevelId Int?
+  accessLevel   accessLevel?  @relation(fields: [accessLevelId], references: [id])
+}
+
+model employeeInfo {
+  id            Int            @id @default(autoincrement())
+  firstName     String?
+  lastName      String?
+  otherName     String?
+  dateOfBirth   String?
+  gender        String?
+  maritalStatus maritalStatus?
+  nationality   String?
+  phone         String?
+  photo         String?
+  address       String?
+  email         String         @unique
+  user          users          @relation(fields: [email], references: [email])
+}
+
+model otp {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  otp       String
+  createdAt DateTime @default(now())
+  user      users    @relation(fields: [email], references: [email])
+}
+
+model accessLevel {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  permissions Json
+  createdAt   DateTime @default(now())
+  createdBy   Int
+  users       users[]
+}
+
+enum maritalStatus {
+  Single
+  Married
+}
+
+enum role {
+  admin
+  employee
+  client
+}
