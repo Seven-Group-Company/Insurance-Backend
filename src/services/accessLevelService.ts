@@ -218,7 +218,7 @@ export class AccessLevelService {
       });
 
       if (!data) {
-        res.status(404).json({
+        return res.status(404).json({
           success: false,
           statusCode: 404,
           message: "Access Level Id not found",

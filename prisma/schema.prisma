@@ -98,3 +98,44 @@ enum role {
   employee
   client
 }
+
+// Policy Management 
+model policy_category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  created_by  Int
+  created_at  DateTime  @default(now())
+  updated_by  Int?
+  updated_at  DateTime?
+  policy      policy[]
+}
+
+model policy {
+  id                   Int              @id @default(autoincrement())
+  name                 String           @unique
+  description          String?
+  code                 String
+  eligibility_criteria String?
+  coverage_details     String?
+  documents_required   String?
+  policy_category_id   Int?
+  policy_category      policy_category? @relation(fields: [policy_category_id], references: [id])
+  active               Boolean          @default(true)
+  created_by           Int
+  created_at           DateTime         @default(now())
+  updated_by           Int?
+  updated_at           DateTime?
+}
+
+model attachments {
+  id         Int       @id @default(autoincrement())
+  name       String
+  type       String?
+  url        String
+  size       String?
+  created_by Int
+  created_at DateTime  @default(now())
+  updated_by Int?
+  updated_at DateTime?
+}
