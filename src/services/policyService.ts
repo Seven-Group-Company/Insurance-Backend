@@ -232,6 +232,35 @@ export class PolicyManagenetService {
     }
   };
 
+  policyStats = async (req: any, res: Response) => {
+    try {
+      const data = await prisma.policy.findMany();
+
+      const statusStats = data.reduce(
+        (acc, policy) => {
+          const status = policy.status;
+          if (acc[status]) {
+            acc[status]++;
+          } else {
+            acc[status] = 1;
+          }
+          return acc;
+        },
+        {
+          Published: 0,
+          Approved: 0,
+          Pending: 0,
+          Rejected: 0,
+          Draft: 0,
+          Archived: 0,
+        }
+      );
+      sendResponse[200](res, statusStats);
+    } catch (error) {
+      return sendResponse[500](res, error.message);
+    }
+  };
+
   uploadFiles = async (req: any, res: Response) => {
     try {
       const files: any = req?.files;
