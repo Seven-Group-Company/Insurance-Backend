@@ -115,27 +115,47 @@ model policy {
   id                   Int              @id @default(autoincrement())
   name                 String           @unique
   description          String?
-  code                 String
+  code                 String?          @unique
   eligibility_criteria String?
   coverage_details     String?
   documents_required   String?
   policy_category_id   Int?
   policy_category      policy_category? @relation(fields: [policy_category_id], references: [id])
+  status               policyStatus?    @default(Draft)
   active               Boolean          @default(true)
   created_by           Int
   created_at           DateTime         @default(now())
   updated_by           Int?
   updated_at           DateTime?
+  policy_files         policy_files[]
+}
+
+model policy_files {
+  id            Int          @id @default(autoincrement())
+  policy_id     Int?
+  policy        policy?      @relation(fields: [policy_id], references: [id])
+  attachment_id Int?
+  attachment    attachments? @relation(fields: [attachment_id], references: [id])
 }
 
 model attachments {
-  id         Int       @id @default(autoincrement())
-  name       String
-  type       String?
-  url        String
-  size       String?
-  created_by Int
-  created_at DateTime  @default(now())
-  updated_by Int?
-  updated_at DateTime?
+  id           Int            @id @default(autoincrement())
+  name         String
+  type         String?
+  url          String
+  size         String?
+  created_by   Int
+  created_at   DateTime       @default(now())
+  updated_by   Int?
+  updated_at   DateTime?
+  policy_files policy_files[]
+}
+
+enum policyStatus {
+  Published
+  Approved
+  Pending
+  Rejected
+  Draft
+  Archived
 }
