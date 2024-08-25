@@ -12,23 +12,25 @@ datasource db {
 }
 
 model users {
-  id            Int           @id @default(autoincrement())
-  name          String
-  email         String        @unique
-  createdAt     DateTime      @default(now())
-  active        Boolean       @default(true)
-  photo         String?
-  createdBy     Int
-  updatedAt     DateTime?
-  updatedBy     Int?
-  userType      role          @default(employee)
-  employeeInfo  employeeInfo?
-  otp           otp?
-  accessLevelId Int?
-  accessLevel   accessLevel?  @relation(fields: [accessLevelId], references: [id])
-  mfa           mfa?
-  positionId    Int?
-  position      position?     @relation(fields: [positionId], references: [id])
+  id              Int           @id @default(autoincrement())
+  name            String
+  email           String        @unique
+  createdAt       DateTime      @default(now())
+  active          Boolean       @default(true)
+  photo           String?
+  createdBy       Int
+  updatedAt       DateTime?
+  updatedBy       Int?
+  userType        role          @default(employee)
+  employeeInfo    employeeInfo?
+  otp             otp?
+  accessLevelId   Int?
+  accessLevel     accessLevel?  @relation(fields: [accessLevelId], references: [id])
+  mfa             mfa?
+  positionId      Int?
+  position        position?     @relation(fields: [positionId], references: [id])
+  policyCreatedBy policy[]      @relation("policyCreatedBy")
+  policyUpdatedBy policy[]      @relation("policyUpdatedBy")
 }
 
 model employeeInfo {
@@ -124,10 +126,13 @@ model policy {
   status               policyStatus?    @default(Draft)
   active               Boolean          @default(true)
   created_by           Int
+  created_user         users            @relation("policyCreatedBy", fields: [created_by], references: [id])
   created_at           DateTime         @default(now())
   updated_by           Int?
   updated_at           DateTime?
+  updated_user         users?           @relation("policyUpdatedBy", fields: [updated_by], references: [id])
   policy_files         policy_files[]
+  usersId              Int?
 }
 
 model policy_files {
