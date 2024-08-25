@@ -187,6 +187,18 @@ export class PolicyManagenetService {
               attachment: true,
             },
           },
+          created_user: {
+            select: {
+              name: true,
+              photo: true,
+            },
+          },
+          updated_user: {
+            select: {
+              name: true,
+              photo: true,
+            },
+          },
         },
       });
       sendResponse[200](res, policy);
@@ -199,7 +211,7 @@ export class PolicyManagenetService {
       const { id } = req.query;
 
       // Validations
-      const validateInput = validator.checkPolicyId.validate(req.body);
+      const validateInput = validator.checkPolicyId.validate(req.query);
       if (validateInput.error) {
         return sendResponse[400](res, `${validateInput.error.message}`);
       }
@@ -218,6 +230,18 @@ export class PolicyManagenetService {
           policy_files: {
             select: {
               attachment: true,
+            },
+          },
+          created_user: {
+            select: {
+              name: true,
+              photo: true,
+            },
+          },
+          updated_user: {
+            select: {
+              name: true,
+              photo: true,
             },
           },
         },
