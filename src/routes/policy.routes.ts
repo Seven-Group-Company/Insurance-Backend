@@ -31,6 +31,7 @@ policyRouter.put("/toggle-status", [permission.protect], policy.toggleStatus);
 policyRouter.delete("/delete", [permission.protect], policy.deletePolicy);
 policyRouter.get("/list", [permission.protect], policy.listPolicy);
 policyRouter.get("/get", [permission.protect], policy.getPolicy);
+policyRouter.get("/stats", [permission.protect], policy.policyStats);
 policyRouter.post(
   "/upload-files",
   [permission.protect, upload],
