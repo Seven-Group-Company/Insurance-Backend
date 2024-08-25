@@ -41,6 +41,7 @@ export class PolicyManagenetService {
   duplicatePolicy = async (req: any, res: Response) => {
     try {
       const { id, name } = req.body;
+
       const validateInput = validator.duplicatePolicy.validate(req.body);
       if (validateInput.error) {
         return sendResponse[400](res, `${validateInput.error.message}`);
@@ -88,10 +89,27 @@ export class PolicyManagenetService {
     try {
       const { id, name } = req.body;
 
+      // Validator
+      const validateInput = validator.updatePolicy.validate(req.body);
+      if (validateInput.error) {
+        return sendResponse[400](res, `${validateInput.error.message}`);
+      }
+
       //   Check Existance
       const existance = await this.checkPolicyExistenceByyId(id);
       if (!existance) {
         return sendResponse[404](res, "Policy ID not Found");
+      }
+      // Check Policy Category id
+      if (req.body.policy_category_id) {
+        const existanceCatrgory = await prisma.policy_category.findUnique({
+          where: {
+            id: +req.body.policy_category_id,
+          },
+        });
+        if (!existanceCatrgory) {
+          return sendResponse[404](res, "Policy Catrgoty ID not Found");
+        }
       }
 
       const name_existance = await this.checkPolicyExistenceByName(name);
@@ -100,7 +118,7 @@ export class PolicyManagenetService {
       }
 
       // Generate Object for Update
-      let newDataObject = createObject(req.body);
+      let newDataObject = createObject(validateInput.value);
       newDataObject["updated_by"] = Number(req?.user.id);
       newDataObject["updated_at"] = new Date();
 
@@ -119,9 +137,14 @@ export class PolicyManagenetService {
     try {
       const { id } = req.query;
 
+      // Validations
+      const validateInput = validator.checkPolicyId.validate(req.body);
+      if (validateInput.error) {
+        return sendResponse[400](res, `${validateInput.error.message}`);
+      }
+
       // Check Existance
       const checkExistance = await this.checkPolicyExistenceByyId(id);
-
       if (!checkExistance) {
         return sendResponse[404](res, "Policy Not Found");
       }
@@ -174,6 +197,13 @@ export class PolicyManagenetService {
   getPolicy = async (req: Request, res: Response) => {
     try {
       const { id } = req.query;
+
+      // Validations
+      const validateInput = validator.checkPolicyId.validate(req.body);
+      if (validateInput.error) {
+        return sendResponse[400](res, `${validateInput.error.message}`);
+      }
+
       const policy = await prisma.policy.findUnique({
         where: {
           id: Number(id),
@@ -210,7 +240,7 @@ export class PolicyManagenetService {
       }
       const policy = await prisma.policy.findUnique({
         where: {
-          id: Number(id),
+          id: +id,
         },
       });
 
@@ -220,7 +250,7 @@ export class PolicyManagenetService {
 
       await prisma.policy.update({
         where: {
-          id: Number(id),
+          id: +id,
         },
         data: {
           status,
@@ -234,7 +264,12 @@ export class PolicyManagenetService {
 
   policyStats = async (req: any, res: Response) => {
     try {
-      const data = await prisma.policy.findMany();
+      const data = await prisma.policy.findMany({
+        select: {
+          id: true,
+          status: true,
+        },
+      });
 
       const statusStats = data.reduce(
         (acc, policy) => {
@@ -265,6 +300,18 @@ export class PolicyManagenetService {
     try {
       const files: any = req?.files;
       const { id } = req.query;
+
+      // Validations
+      const validateInput = validator.checkPolicyId.validate(req.body);
+      if (validateInput.error) {
+        return sendResponse[400](res, `${validateInput.error.message}`);
+      }
+
+      //   Check Existance
+      const existance = await this.checkPolicyExistenceByyId(id);
+      if (!existance) {
+        return sendResponse[404](res, "Policy ID not Found");
+      }
 
       files.map(async (file) => {
         try {

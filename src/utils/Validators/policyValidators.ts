@@ -10,9 +10,22 @@ const statusEnum = [
 ];
 
 export class PolicyValidator {
+  checkPolicyId = Joi.object({
+    id: Joi.required(),
+  });
   duplicatePolicy = Joi.object({
     id: Joi.required(),
     name: Joi.string().required(),
+  });
+
+  updatePolicy = Joi.object({
+    id: Joi.required(),
+    name: Joi.string(),
+    description: Joi.string(),
+    eligibility_criteria: Joi.string(),
+    coverage_details: Joi.string(),
+    documents_required: Joi.string(),
+    policy_category_id: Joi.number(),
   });
 
   listPolicy = Joi.object({
