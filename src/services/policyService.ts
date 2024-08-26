@@ -191,12 +191,14 @@ export class PolicyManagenetService {
             select: {
               name: true,
               photo: true,
+              email: true,
             },
           },
           updated_user: {
             select: {
               name: true,
               photo: true,
+              email: true,
             },
           },
         },
@@ -236,12 +238,14 @@ export class PolicyManagenetService {
             select: {
               name: true,
               photo: true,
+              email: true,
             },
           },
           updated_user: {
             select: {
               name: true,
               photo: true,
+              email: true,
             },
           },
         },
