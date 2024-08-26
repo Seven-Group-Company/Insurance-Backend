@@ -164,9 +164,9 @@ export class PolicyManagenetService {
   };
   listPolicy = async (req: Request, res: Response) => {
     try {
-      const { status } = req.body;
+      const { status }: any = req.query;
 
-      const validateInput = validator.listPolicy.validate(req.body);
+      const validateInput = validator.listPolicy.validate(req.query);
       if (validateInput.error) {
         return sendResponse[400](res, `${validateInput.error.message}`);
       }
