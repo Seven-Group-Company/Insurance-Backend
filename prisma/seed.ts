@@ -24,6 +24,13 @@ const seedUser = async () => {
             mfaEnabled: false,
           },
         },
+        employeeInfo: {
+          create: {
+            id: 1,
+            firstName: "Super",
+            lastName: "Admin",
+          },
+        },
       },
     });
   } catch (error) {
