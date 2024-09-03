@@ -40,4 +40,7 @@ export class PolicyValidator {
       .valid(...statusEnum)
       .required(),
   });
+  deleteAttachment = Joi.object({
+    attachchment_id: Joi.required(),
+  });
 }

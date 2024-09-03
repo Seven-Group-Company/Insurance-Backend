@@ -142,7 +142,7 @@ model policy_files {
   policy_id     Int?
   policy        policy?      @relation(fields: [policy_id], references: [id])
   attachment_id Int?
-  attachment    attachments? @relation(fields: [attachment_id], references: [id])
+  attachment    attachments? @relation(fields: [attachment_id], references: [id], onDelete: Cascade)
 }
 
 model attachments {

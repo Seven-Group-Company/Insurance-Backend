@@ -32,6 +32,11 @@ policyRouter.post("/duplicate", [permission.protect], policy.duplicatePolicy);
 policyRouter.put("/update", [permission.protect], policy.updatePolicy);
 policyRouter.put("/toggle-status", [permission.protect], policy.toggleStatus);
 policyRouter.delete("/delete", [permission.protect], policy.deletePolicy);
+policyRouter.delete(
+  "/delete-attachment",
+  [permission.protect],
+  policy.deletePolicyAttachment
+);
 policyRouter.get("/list", [permission.protect], policy.listPolicy);
 policyRouter.get("/get", [permission.protect], policy.getPolicy);
 policyRouter.get("/stats", [permission.protect], policy.policyStats);

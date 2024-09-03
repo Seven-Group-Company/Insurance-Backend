@@ -343,33 +343,34 @@ export class PolicyManagenetService {
         return sendResponse[404](res, "Policy ID not Found");
       }
 
-      files.map(async (file) => {
-        try {
-          const url = await uploadPolicyFiles(file.path, "policy-docs");
-          await prisma.attachments.create({
-            data: {
-              name: file?.originalname,
-              size: `${file?.size}`,
-              type: `${file?.originalname.split(".")[1]}`,
-              url,
-              created_by: Number(req?.user.id),
-              policy_files: {
-                create: {
-                  policy_id: +id,
+      const response = await Promise.all(
+        files.map(async (file) => {
+          try {
+            const url = await uploadPolicyFiles(file.path, "policy-docs");
+            const res = await prisma.attachments.create({
+              data: {
+                name: file?.originalname,
+                size: `${file?.size}`,
+                type: `${file?.originalname.split(".")[1]}`,
+                url,
+                created_by: Number(req?.user.id),
+                policy_files: {
+                  create: {
+                    policy_id: +id,
+                  },
                 },
               },
-            },
-          });
-          // Delete local files after upload to Cloudinary
-          await files.forEach((file) => {
+            });
+            // Delete local files after upload to Cloudinary
             fs.unlinkSync(file.path);
-          });
-        } catch (error) {
-          return sendResponse[500](res, error.message);
-        }
-      });
+            return res; // Return the created attachment
+          } catch (error) {
+            return sendResponse[500](res, error.message);
+          }
+        })
+      );
 
-      sendResponse[200](res, null);
+      return sendResponse[200](res, response);
     } catch (error) {
       return sendResponse[500](res, error.message);
     }
@@ -416,6 +417,34 @@ export class PolicyManagenetService {
       }
 
       sendResponse[200](res, null);
+    } catch (error) {
+      return sendResponse[500](res, error.message);
+    }
+  };
+
+  deletePolicyAttachment = async (req: Request, res: Response) => {
+    try {
+      const { attachchment_id } = req.query;
+      const validateInput = validator.deleteAttachment.validate(req.query);
+      if (validateInput.error) {
+        return sendResponse[400](res, `${validateInput.error.message}`);
+      }
+      const policy = await prisma.attachments.findUnique({
+        where: {
+          id: +attachchment_id,
+        },
+      });
+
+      if (!policy) {
+        return sendResponse[404](res, "attachment ID not Found");
+      }
+
+      const response = await prisma.attachments.delete({
+        where: {
+          id: +attachchment_id,
+        },
+      });
+      sendResponse[200](res, response);
     } catch (error) {
       return sendResponse[500](res, error.message);
     }
