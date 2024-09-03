@@ -24,7 +24,9 @@ export class PolicyValidator {
     description: Joi.string(),
     eligibility_criteria: Joi.string(),
     coverage_details: Joi.string(),
-    documents_required: Joi.string(),
+    documents_required: Joi.array(),
+    features: Joi.array(),
+    cover_image: Joi.string(),
     policy_category_id: Joi.number(),
   });
 

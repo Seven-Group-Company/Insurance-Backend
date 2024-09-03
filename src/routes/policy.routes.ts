@@ -19,6 +19,9 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
 }).array("files", 10); // Accept up to 10 files
+const upload1 = multer({
+  storage: storage,
+}).single("file"); // Accept up to 10 files
 
 export const policyRouter = Router();
 
@@ -36,4 +39,9 @@ policyRouter.post(
   "/upload-files",
   [permission.protect, upload],
   policy.uploadFiles
+);
+policyRouter.post(
+  "/upload-cover-photo",
+  [permission.protect, upload1],
+  policy.uploadCoverPhoto
 );

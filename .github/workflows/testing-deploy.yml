@@ -15,5 +15,5 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /home/ubuntu/ && \
-            sudo bash deploy.sh
+            cd /home/ubuntu/scripts && \
+            sudo bash insurance-deploy.sh

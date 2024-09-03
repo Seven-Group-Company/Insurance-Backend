@@ -50,7 +50,6 @@ export class UserService {
     try {
       const {
         email,
-        createdBy,
         userType,
         firstName,
         lastName,
@@ -373,7 +372,7 @@ export class UserService {
         name: existance.name,
         otp,
       };
-
+      console.log(otp);
       // Send OTP to user
       sendEmail(otpTemplate(emailData), email, "OTP");
       return res.status(200).json({
