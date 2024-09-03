@@ -6,13 +6,14 @@ import { PolicyNumberGenerator } from "../utils/idGenerator";
 import { PolicyValidator } from "../utils/Validators/policyValidators";
 import { createObject } from "../utils/objectCreator";
 import uploadPolicyFiles from "../utils/uploadPolicyFiles";
+import uploadFile from "../utils/upload";
 const sendResponse = new SendResponse();
 const validator = new PolicyValidator();
 
 export class PolicyManagenetService {
   createPolicy = async (req: any, res: Response) => {
     try {
-      const { name } = req.body;
+      const { name, policy_category_id } = req.body;
       //   Check Policy Existance
       if (await this.checkPolicyExistenceByName(name)) {
         return sendResponse[404](res, "Policy name already exists");
@@ -21,6 +22,7 @@ export class PolicyManagenetService {
       const policy = await prisma.policy.create({
         data: {
           name,
+          policy_category_id: +policy_category_id,
           created_by: Number(req?.user.id),
         },
       });
@@ -330,7 +332,7 @@ export class PolicyManagenetService {
       const { id } = req.query;
 
       // Validations
-      const validateInput = validator.checkPolicyId.validate(req.body);
+      const validateInput = validator.checkPolicyId.validate(req.query);
       if (validateInput.error) {
         return sendResponse[400](res, `${validateInput.error.message}`);
       }
@@ -348,7 +350,7 @@ export class PolicyManagenetService {
             data: {
               name: file?.originalname,
               size: `${file?.size}`,
-              type: file?.mimetype,
+              type: `${file?.originalname.split(".")[1]}`,
               url,
               created_by: Number(req?.user.id),
               policy_files: {
@@ -366,6 +368,52 @@ export class PolicyManagenetService {
           return sendResponse[500](res, error.message);
         }
       });
+
+      sendResponse[200](res, null);
+    } catch (error) {
+      return sendResponse[500](res, error.message);
+    }
+  };
+  uploadCoverPhoto = async (req: any, res: Response) => {
+    try {
+      const file: any = req?.file;
+      const { id } = req.query;
+
+      // Validations
+      const validateInput = validator.checkPolicyId.validate(req.query);
+      if (validateInput.error) {
+        return sendResponse[400](res, `${validateInput.error.message}`);
+      }
+
+      //   Check Existance
+      const existance = await this.checkPolicyExistenceByyId(id);
+      if (!existance) {
+        return sendResponse[404](res, "Policy ID not Found");
+      }
+      try {
+        const url = await uploadFile(file.path, "policy-docs");
+        await prisma.policy.update({
+          where: {
+            id: +id,
+          },
+          data: {
+            cover_image: url,
+          },
+        });
+        await prisma.attachments.create({
+          data: {
+            name: file?.originalname,
+            size: `${file?.size}`,
+            type: `${file?.originalname.split(".")[1]}`,
+            url,
+            created_by: Number(req?.user.id),
+          },
+        });
+        // Delete local files after upload to Cloudinary
+        await fs.unlinkSync(file.path);
+      } catch (error) {
+        return sendResponse[500](res, error.message);
+      }
 
       sendResponse[200](res, null);
     } catch (error) {
