@@ -370,7 +370,7 @@ export class PolicyManagenetService {
         })
       );
 
-      const response = await prisma.policy.findMany({
+      const response = await prisma.policy.findUnique({
         where: {
           id: +id,
         },
@@ -404,6 +404,7 @@ export class PolicyManagenetService {
       if (!existance) {
         return sendResponse[404](res, "Policy ID not Found");
       }
+      let URL;
       try {
         const url = await uploadFile(file.path, "policy-docs");
         await prisma.policy.update({
@@ -423,13 +424,14 @@ export class PolicyManagenetService {
             created_by: Number(req?.user.id),
           },
         });
+        URL = url;
         // Delete local files after upload to Cloudinary
         await fs.unlinkSync(file.path);
       } catch (error) {
         return sendResponse[500](res, error.message);
       }
 
-      sendResponse[200](res, null);
+      sendResponse[200](res, { URL });
     } catch (error) {
       return sendResponse[500](res, error.message);
     }
