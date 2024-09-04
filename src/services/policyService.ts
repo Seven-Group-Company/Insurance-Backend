@@ -343,7 +343,7 @@ export class PolicyManagenetService {
         return sendResponse[404](res, "Policy ID not Found");
       }
 
-      const response = await Promise.all(
+      await Promise.all(
         files.map(async (file) => {
           try {
             const url = await uploadPolicyFiles(file.path, "policy-docs");
@@ -369,6 +369,19 @@ export class PolicyManagenetService {
           }
         })
       );
+
+      const response = await prisma.policy.findMany({
+        where: {
+          id: +id,
+        },
+        select: {
+          policy_files: {
+            select: {
+              attachment: true,
+            },
+          },
+        },
+      });
 
       return sendResponse[200](res, response);
     } catch (error) {
