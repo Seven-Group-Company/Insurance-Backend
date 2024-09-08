@@ -96,6 +96,50 @@ export class PolicyCategoryService {
       return sendResponse[500](res, error.message);
     }
   };
+  listPolicyCategoryForHome = async (req: Request, res: Response) => {
+    try {
+      const policyCategory = await prisma.policy_category.findMany({
+        where: {
+          policy: {
+            every: {
+              status: "Published",
+            },
+          },
+        },
+        select: {
+          name: true,
+          description: true,
+          policy: {
+            select: {
+              id: true,
+              active: true,
+              code: true,
+              cover_image: true,
+              coverage_details: true,
+              description: true,
+              documents_required: true,
+              eligibility_criteria: true,
+              features: true,
+              name: true,
+              policy_files: {
+                select: {
+                  attachment: {
+                    select: {
+                      url: true,
+                    },
+                  },
+                },
+              },
+              status: true,
+            },
+          },
+        },
+      });
+      sendResponse[200](res, policyCategory);
+    } catch (error) {
+      return sendResponse[500](res, error.message);
+    }
+  };
 
   private checkPolicyExistenceByName = async (name: string) => {
     try {
