@@ -27,3 +27,7 @@ policyCategoryRouter.get(
   [permission.protect],
   policyCatService.listPolicyCategory
 );
+policyCategoryRouter.get(
+  "/list-homepage",
+  policyCatService.listPolicyCategoryForHome
+);

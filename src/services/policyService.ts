@@ -210,6 +210,47 @@ export class PolicyManagenetService {
       return sendResponse[500](res, error.message);
     }
   };
+  listPolicyHomePage = async (req: Request, res: Response) => {
+    try {
+      const policy = await prisma.policy.findMany({
+        where: {
+          status: "Published",
+        },
+        select: {
+          id: true,
+          active: true,
+          code: true,
+          cover_image: true,
+          coverage_details: true,
+          description: true,
+          documents_required: true,
+          eligibility_criteria: true,
+          features: true,
+          name: true,
+          policy_category: {
+            select: {
+              name: true,
+              description: true,
+            },
+          },
+          policy_category_id: true,
+          policy_files: {
+            select: {
+              attachment: {
+                select: {
+                  url: true,
+                },
+              },
+            },
+          },
+          status: true,
+        },
+      });
+      sendResponse[200](res, policy);
+    } catch (error) {
+      return sendResponse[500](res, error.message);
+    }
+  };
   getPolicy = async (req: Request, res: Response) => {
     try {
       const { id } = req.query;
