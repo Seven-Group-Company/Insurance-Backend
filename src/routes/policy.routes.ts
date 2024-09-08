@@ -40,6 +40,7 @@ policyRouter.delete(
 policyRouter.get("/list", [permission.protect], policy.listPolicy);
 policyRouter.get("/list-homepage", policy.listPolicyHomePage);
 policyRouter.get("/get", [permission.protect], policy.getPolicy);
+policyRouter.get("/get-homepage", policy.getPolicy);
 policyRouter.get("/stats", [permission.protect], policy.policyStats);
 policyRouter.post(
   "/upload-files",
