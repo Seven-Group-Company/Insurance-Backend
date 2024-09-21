@@ -1,12 +1,11 @@
 import Joi from "joi";
 
 const statusEnum = [
-  "Published",
-  "Approved",
-  "Pending",
-  "Rejected",
   "Draft",
-  "Archived",
+  "Pending_Review",
+  "Under_Review",
+  "Approved",
+  "Rejected",
 ];
 
 export default class ClientPolicyValidator {
@@ -18,6 +17,13 @@ export default class ClientPolicyValidator {
   uploadClientPolicy = Joi.object({
     client_email: Joi.required(),
     client_policy_id: Joi.required(),
-    file_name: Joi.required()
+    file_name: Joi.required(),
+  });
+
+  toggleStaus = Joi.object({
+    client_policy_id: Joi.required(),
+    status: Joi.string()
+      .valid(...statusEnum)
+      .required(),
   });
 }

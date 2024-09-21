@@ -130,6 +130,7 @@ export class UserService {
         data: user,
       });
     } catch (error) {
+      console.log(error);
       res.status(500).json({
         success: false,
         statusCode: 500,
@@ -167,6 +168,21 @@ export class UserService {
           },
         },
       });
+
+      const checkPolicyID = await prisma.policy.findFirst({
+        where: {
+          id: Number(policyId),
+        },
+      });
+
+      if (!checkPolicyID) {
+        return res.status(404).json({
+          success: false,
+          statusCode: 404,
+          message: "Policy ID not Found",
+          data: null,
+        });
+      }
 
       if (checkExistance && checkPolicyExistance) {
         return res.status(404).json({
@@ -267,6 +283,7 @@ export class UserService {
         data: null,
       });
     } catch (error) {
+      console.log(error);
       res.status(500).json({
         success: false,
         statusCode: 500,
@@ -415,6 +432,66 @@ export class UserService {
           active: !existingUser.active,
           updatedAt: new Date(),
           updatedBy: Number(req?.user.id),
+        },
+        include: {
+          employeeInfo: true,
+        },
+      });
+
+      return res.status(200).json({
+        success: true,
+        statusCode: 200,
+        message: "User archived successfully",
+        data: user,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        statusCode: 500,
+        message: "Internal Server Error",
+        data: null,
+        error: error.message,
+      });
+    }
+  };
+  toggleAgent = async (req: any, res: Response) => {
+    try {
+      const { email }: any = req.query;
+      const existingUser = await prisma.users.findUnique({
+        where: {
+          email: String(email),
+        },
+        select: {
+          id: true,
+          employeeInfo: {
+            select: {
+              isAgent: true,
+            },
+          },
+        },
+      });
+
+      if (!existingUser) {
+        return res.status(404).json({
+          success: false,
+          statusCode: 404,
+          message: "No User Found",
+          data: null,
+        });
+      }
+
+      const user = await prisma.users.update({
+        where: {
+          email,
+        },
+        data: {
+          updatedAt: new Date(),
+          updatedBy: Number(req?.user.id),
+          employeeInfo: {
+            update: {
+              isAgent: !existingUser.employeeInfo.isAgent,
+            },
+          },
         },
         include: {
           employeeInfo: true,

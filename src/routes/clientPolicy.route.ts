@@ -52,4 +52,10 @@ clientPolicyRouter.put(
   clientPolicy.reassignAgent
 );
 
+clientPolicyRouter.put(
+  "/toggle-status",
+  [permission.protect],
+  clientPolicy.toggleStatus
+);
+
 clientPolicyRouter.post("/upload-file", [upload1], clientPolicy.uploadFile);

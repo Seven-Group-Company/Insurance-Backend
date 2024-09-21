@@ -122,6 +122,7 @@ export class ClientPolicyManagenetService {
             client_files: {
               create: {
                 client_email,
+                client_policy_id: Number(client_policy_id),
               },
             },
           },
@@ -174,7 +175,18 @@ export class ClientPolicyManagenetService {
         include: {
           policy: true,
           agent: true,
-          client_files: true,
+          client_files: {
+            select: {
+              attachment: {
+                select: {
+                  url: true,
+                  name: true,
+                  size: true,
+                  type: true,
+                },
+              },
+            },
+          },
         },
       });
       sendResponse[200](res, data);
@@ -192,6 +204,42 @@ export class ClientPolicyManagenetService {
         },
         data: {
           agent_id: Number(agent_id),
+        },
+      });
+      sendResponse[200](res, null);
+    } catch (error) {
+      return sendResponse[500](res, error.message);
+    }
+  };
+
+  toggleStatus = async (req: any, res: Response) => {
+    try {
+      const { client_policy_id, status } = req.body;
+
+      // Validations
+      const validateInput = validator.toggleStaus.validate(req.body);
+      if (validateInput.error) {
+        return sendResponse[400](res, `${validateInput.error.message}`);
+      }
+
+      const checkPolicyExistance = await prisma.client_policy.findFirst({
+        where: {
+          AND: {
+            id: Number(client_policy_id),
+          },
+        },
+      });
+
+      if (!checkPolicyExistance) {
+        return sendResponse[404](res, "Policy Does not exit");
+      }
+
+      await prisma.client_policy.update({
+        where: {
+          id: Number(client_policy_id),
+        },
+        data: {
+          status,
         },
       });
       sendResponse[200](res, null);

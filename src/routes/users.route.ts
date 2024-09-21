@@ -18,6 +18,7 @@ usersRouter.put(
   [permission.protect],
   userService.toggleUserStatus
 );
+usersRouter.put("/toggle-agent", [permission.protect], userService.toggleAgent);
 usersRouter.post("/login", userService.loginUser);
 usersRouter.post("/verify-otp", userService.verifyOTP);
 usersRouter.post("/verify-mfa", userService.verifyMFA);
