@@ -7,6 +7,7 @@ import cors from "cors";
 import { positionRouter } from "./routes/position.route";
 import { policyCategoryRouter } from "./routes/policyCategory.route";
 import { policyRouter } from "./routes/policy.routes";
+import { clientPolicyRouter } from "./routes/clientPolicy.route";
 
 dotenv.config();
 export const app = express();
@@ -20,6 +21,7 @@ app.use("/access-level", accessRouter);
 app.use("/position", positionRouter);
 app.use("/policy-category", policyCategoryRouter);
 app.use("/policy", policyRouter);
+app.use("/client-policy", clientPolicyRouter);
 
 app.listen(port, () => {
   return console.log(`Express is listening at http://localhost:${port}`);

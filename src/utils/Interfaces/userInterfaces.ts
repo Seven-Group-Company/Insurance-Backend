@@ -16,6 +16,7 @@ export interface UserInterface {
   updatedBy: number;
   accessLevelId: number;
   positionId: number;
+  policyId: number;
 }
 
 interface EmployeeInfo {

@@ -12,25 +12,27 @@ datasource db {
 }
 
 model users {
-  id              Int           @id @default(autoincrement())
+  id              Int             @id @default(autoincrement())
   name            String
-  email           String        @unique
-  createdAt       DateTime      @default(now())
-  active          Boolean       @default(true)
+  email           String          @unique
+  createdAt       DateTime        @default(now())
+  active          Boolean         @default(true)
   photo           String?
   createdBy       Int
   updatedAt       DateTime?
   updatedBy       Int?
-  userType        role          @default(employee)
+  userType        role            @default(employee)
   employeeInfo    employeeInfo?
   otp             otp?
   accessLevelId   Int?
-  accessLevel     accessLevel?  @relation(fields: [accessLevelId], references: [id])
+  accessLevel     accessLevel?    @relation(fields: [accessLevelId], references: [id])
   mfa             mfa?
   positionId      Int?
-  position        position?     @relation(fields: [positionId], references: [id])
-  policyCreatedBy policy[]      @relation("policyCreatedBy")
-  policyUpdatedBy policy[]      @relation("policyUpdatedBy")
+  position        position?       @relation(fields: [positionId], references: [id])
+  policyCreatedBy policy[]        @relation("policyCreatedBy")
+  policyUpdatedBy policy[]        @relation("policyUpdatedBy")
+  clientInfo      clientInfo?
+  client_policy   client_policy[]
 }
 
 model employeeInfo {
@@ -45,7 +47,25 @@ model employeeInfo {
   phone         String?
   address       String?
   email         String         @unique
+  isAgent       Boolean        @default(false)
   user          users          @relation(fields: [email], references: [email])
+}
+
+model clientInfo {
+  id            Int             @id @default(autoincrement())
+  firstName     String?
+  lastName      String?
+  otherName     String?
+  dateOfBirth   String?
+  gender        String?
+  maritalStatus maritalStatus?
+  nationality   String?
+  phone         String?
+  address       String?
+  email         String          @unique
+  isTempUser    Boolean         @default(true)
+  user          users           @relation(fields: [email], references: [email])
+  client_policy client_policy[]
 }
 
 model otp {
@@ -135,6 +155,7 @@ model policy {
   updated_user         users?           @relation("policyUpdatedBy", fields: [updated_by], references: [id])
   policy_files         policy_files[]
   usersId              Int?
+  client_policy        client_policy[]
 }
 
 model policy_files {
@@ -156,6 +177,7 @@ model attachments {
   updated_by   Int?
   updated_at   DateTime?
   policy_files policy_files[]
+  client_files client_files[]
 }
 
 enum policyStatus {
@@ -165,4 +187,36 @@ enum policyStatus {
   Rejected
   Draft
   Archived
+}
+
+// Client Policy Models
+model client_policy {
+  id            Int                @id @default(autoincrement())
+  client_email  String?
+  user          clientInfo?        @relation(fields: [client_email], references: [email])
+  policy_id     Int?
+  policy        policy?            @relation(fields: [policy_id], references: [id])
+  date_enrolled DateTime           @default(now())
+  date_expires  DateTime?
+  status        clientPolicyStatus @default(Draft)
+  agent_id      Int?
+  agent         users?             @relation(fields: [agent_id], references: [id])
+  client_files  client_files[]
+}
+
+model client_files {
+  id               Int            @id @default(autoincrement())
+  client_policy_id Int?
+  client_email     String
+  client_policy    client_policy? @relation(fields: [client_policy_id], references: [id])
+  attachment_id    Int?
+  attachment       attachments?   @relation(fields: [attachment_id], references: [id], onDelete: Cascade)
+}
+
+enum clientPolicyStatus {
+  Draft
+  Pending_Review
+  Under_Review
+  Approved
+  Rejected
 }

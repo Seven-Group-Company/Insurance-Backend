@@ -13,8 +13,7 @@ import { otpTemplate } from "../utils/emailTemplates/OTPTemplate";
 import { generateQR } from "../utils/qr-codeGenerator";
 import { userTemplate } from "../utils/emailTemplates/createUserTemplate";
 import uploadFile from "../utils/upload";
-
-const JWT_SECRET: any = process.env.JWT_SECRET;
+import { findPolicyWithLeastObjects } from "../utils/findAvailableAgent";
 
 const selectQuery = {
   id: true,
@@ -129,6 +128,143 @@ export class UserService {
         statusCode: 200,
         message: "User Created successfully",
         data: user,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        statusCode: 500,
+        message: "Internal Server Error",
+        data: null,
+        error: error.message,
+      });
+    }
+  };
+
+  createTempUser = async (req: any, res: Response) => {
+    try {
+      const {
+        email,
+        firstName,
+        lastName,
+        otherName,
+        dateOfBirth,
+        gender,
+        maritalStatus,
+        phone,
+        policyId,
+      }: UserInterface = req.body;
+      const checkExistance = await prisma.users.findUnique({
+        where: {
+          email,
+        },
+      });
+
+      const checkPolicyExistance = await prisma.client_policy.findFirst({
+        where: {
+          AND: {
+            policy_id: policyId,
+            client_email: email,
+          },
+        },
+      });
+
+      if (checkExistance && checkPolicyExistance) {
+        return res.status(404).json({
+          success: false,
+          statusCode: 404,
+          message: "Client Already Subscribed to Policy",
+          data: null,
+        });
+      }
+
+      if (!checkExistance) {
+        const secret = speakeasy.generateSecret({
+          length: 20,
+          name: `SGC-Insurance (${email})`,
+          issuer: "SGC-Insurance",
+        });
+        const user = await prisma.users.create({
+          data: {
+            email,
+            name: `${firstName} ${otherName} ${lastName}`,
+            createdBy: 1,
+            userType: "client",
+            clientInfo: {
+              create: {
+                firstName,
+                lastName,
+                otherName,
+                dateOfBirth,
+                gender,
+                maritalStatus,
+                phone,
+              },
+            },
+            mfa: {
+              create: {
+                mfaSecret: secret.base32,
+                mfaQrCode: await generateQR(secret.otpauth_url),
+                mfaEnabled: false,
+              },
+            },
+            client_policy: {
+              create: {
+                policy_id: policyId,
+                client_email: email,
+              },
+            },
+          },
+          select: {
+            id: true,
+            clientInfo: true,
+            client_policy: {
+              select: {
+                id: true,
+                client_email: true,
+                policy_id: true,
+                date_enrolled: true,
+                status: true,
+              },
+            },
+          },
+        });
+        await prisma.client_policy.update({
+          where: {
+            id: user.client_policy[0].id,
+          },
+          data: {
+            agent_id: await findPolicyWithLeastObjects(),
+          },
+        });
+        // Send OTP to user
+        await sendEmail(
+          userTemplate({
+            name: `${firstName}`,
+          }),
+          email,
+          "OTP"
+        );
+        return res.status(200).json({
+          success: true,
+          statusCode: 200,
+          message: "Client Created successfully",
+          data: user,
+        });
+      }
+
+      await prisma.client_policy.create({
+        data: {
+          client_email: email,
+          policy_id: policyId,
+          agent_id: await findPolicyWithLeastObjects(),
+        },
+      });
+
+      return res.status(200).json({
+        success: true,
+        statusCode: 200,
+        message: "Client subscribed to policy successfully",
+        data: null,
       });
     } catch (error) {
       res.status(500).json({
@@ -598,6 +734,46 @@ export class UserService {
           success: false,
           statusCode: 404,
           message: "No User Found",
+          data: null,
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        statusCode: 200,
+        message: "Operation Successful",
+        data: existance,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        statusCode: 500,
+        message: "Internal Server Error",
+        data: null,
+        error: error.message,
+      });
+    }
+  };
+
+  listAgent = async (req: Request, res: Response) => {
+    try {
+      const existance: any = await prisma.users.findMany({
+        where: {
+          employeeInfo: {
+            isAgent: true,
+          },
+        },
+        orderBy: {
+          name: "asc",
+        },
+        include: {
+          employeeInfo: true,
+        },
+      });
+      if (!existance) {
+        return res.status(404).json({
+          success: false,
+          statusCode: 404,
+          message: "No Agents Found",
           data: null,
         });
       }
