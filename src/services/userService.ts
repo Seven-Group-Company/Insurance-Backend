@@ -189,7 +189,7 @@ export class UserService {
           success: false,
           statusCode: 404,
           message: "Client Already Subscribed to Policy",
-          data: null,
+          data: checkPolicyExistance,
         });
       }
 
