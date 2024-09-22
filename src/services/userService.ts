@@ -311,6 +311,7 @@ export class UserService {
         address,
         accessLevelId,
         positionId,
+        isAgent,
       }: UserInterface = req.body;
       const existance = await prisma.users.findUnique({
         where: {
@@ -351,6 +352,7 @@ export class UserService {
                 ? nationality
                 : existance.employeeInfo.nationality,
               phone: phone ? phone : existance.employeeInfo.phone,
+              isAgent: isAgent ? isAgent : existance.employeeInfo.isAgent,
             },
           },
         },
@@ -703,12 +705,14 @@ export class UserService {
 
   verifyMFA = async (req: Request, res: Response) => {
     const { email, token } = req.body;
+
     const existance: any = await prisma.users.findUnique({
       where: {
         email,
       },
       select: selectQuery,
     });
+
     if (email === existance.email) {
       const verified = speakeasy.totp.verify({
         secret: existance.mfa.mfaSecret,
@@ -944,6 +948,7 @@ export class UserService {
         email: data.email,
         photo: data.photo,
         userType: data.userType,
+        isAgent: data?.employeeInfo?.isAgent,
         accessLevel: data.accessLevel,
         position: data.userType === "admin" ? "admin" : data.position?.name,
         onboarding,

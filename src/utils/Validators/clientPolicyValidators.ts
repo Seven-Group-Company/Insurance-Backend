@@ -26,4 +26,13 @@ export default class ClientPolicyValidator {
       .valid(...statusEnum)
       .required(),
   });
+
+  rejectPolicy = Joi.object({
+    client_policy_id: Joi.required(),
+    rejection_policy: Joi.string().required(),
+  });
+
+  confirmPolicy = Joi.object({
+    client_policy_id: Joi.required(),
+  });
 }

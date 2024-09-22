@@ -17,6 +17,7 @@ export interface UserInterface {
   accessLevelId: number;
   positionId: number;
   policyId: number;
+  isAgent;
 }
 
 interface EmployeeInfo {

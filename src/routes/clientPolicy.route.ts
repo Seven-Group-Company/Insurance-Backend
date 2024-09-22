@@ -36,7 +36,7 @@ clientPolicyRouter.post(
 
 clientPolicyRouter.get(
   "/agent-dashboard",
-  [permission.protect],
+  [permission.protect, permission.verifyAgent],
   clientPolicy.agentDashboard
 );
 
@@ -56,6 +56,18 @@ clientPolicyRouter.put(
   "/toggle-status",
   [permission.protect],
   clientPolicy.toggleStatus
+);
+
+clientPolicyRouter.put(
+  "/reject-policy",
+  [permission.protect],
+  clientPolicy.rejectPolicy
+);
+
+clientPolicyRouter.put(
+  "/confirm-policy",
+  [permission.protect],
+  clientPolicy.confirmPolicy
 );
 
 clientPolicyRouter.post("/upload-file", [upload1], clientPolicy.uploadFile);

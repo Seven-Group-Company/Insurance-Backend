@@ -140,26 +140,14 @@ export class ClientPolicyManagenetService {
 
   agentDashboard = async (req: any, res: Response) => {
     try {
-      const { agent_id } = req.query;
-      const data = await prisma.client_policy.findMany({
-        where: {
-          agent_id: Number(agent_id),
-        },
-        include: {
-          policy: true,
-          client_files: true,
-          user: {
-            include: {
-              user: {
-                include: {
-                  clientInfo: true,
-                },
-              },
-            },
-          },
-        },
-      });
-      sendResponse[200](res, data);
+      const agent_id = req?.user.id;
+
+      if (req?.user.userType === "admin")
+        return sendResponse[200](res, await this.listClientPolicy());
+
+      const data = await this.listClientPolicy(agent_id);
+
+      return sendResponse[200](res, data);
     } catch (error) {
       return sendResponse[500](res, error.message);
     }
@@ -167,10 +155,10 @@ export class ClientPolicyManagenetService {
 
   clientDashboard = async (req: any, res: Response) => {
     try {
-      const { client_email } = req.query;
+      const { email } = req?.user;
       const data = await prisma.client_policy.findMany({
         where: {
-          client_email,
+          client_email: email,
         },
         include: {
           policy: true,
@@ -246,5 +234,92 @@ export class ClientPolicyManagenetService {
     } catch (error) {
       return sendResponse[500](res, error.message);
     }
+  };
+
+  rejectPolicy = async (req: any, res: Response) => {
+    try {
+      const { client_policy_id, rejection_reason } = req.body;
+
+      // Validations
+      const validateInput = validator.rejectPolicy.validate(req.body);
+      if (validateInput.error) {
+        return sendResponse[400](res, `${validateInput.error.message}`);
+      }
+
+      const checkPolicyExistance = await prisma.client_policy.findFirst({
+        where: {
+          AND: {
+            id: Number(client_policy_id),
+          },
+        },
+      });
+
+      if (!checkPolicyExistance) {
+        return sendResponse[404](res, "Policy Does not exit");
+      }
+
+      await prisma.client_policy.update({
+        where: {
+          id: Number(client_policy_id),
+        },
+        data: {
+          rejection_reason,
+          status: "Rejected",
+        },
+      });
+      sendResponse[200](res, null);
+    } catch (error) {
+      return sendResponse[500](res, error.message);
+    }
+  };
+
+  confirmPolicy = async (req: any, res: Response) => {
+    try {
+      const { client_policy_id } = req.body;
+
+      // Validations
+      const validateInput = validator.confirmPolicy.validate(req.body);
+      if (validateInput.error) {
+        return sendResponse[400](res, `${validateInput.error.message}`);
+      }
+
+      const checkPolicyExistance = await prisma.client_policy.findFirst({
+        where: {
+          AND: {
+            id: Number(client_policy_id),
+          },
+        },
+      });
+
+      if (!checkPolicyExistance) {
+        return sendResponse[404](res, "Policy Does not exit");
+      }
+
+      await prisma.client_policy.update({
+        where: {
+          id: Number(client_policy_id),
+        },
+        data: {
+          status: "Pending_Review",
+        },
+      });
+      sendResponse[200](res, null);
+    } catch (error) {
+      return sendResponse[500](res, error.message);
+    }
+  };
+
+  private listClientPolicy = async (agent_id = undefined) => {
+    console.log(agent_id);
+    return await prisma.client_policy.findMany({
+      where: {
+        agent_id: agent_id ? Number(agent_id) : undefined,
+      },
+      include: {
+        policy: true,
+        client_files: true,
+        user: true,
+      },
+    });
   };
 }

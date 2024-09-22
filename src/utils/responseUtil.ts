@@ -26,6 +26,15 @@ export class SendResponse {
       error: error,
     });
   };
+  "401" = (res, message, data = null, error = null) => {
+    res.status(401).json({
+      success: false,
+      statusCode: 401,
+      message,
+      data: data,
+      error: error,
+    });
+  };
   "500" = (res, error = null) => {
     res.status(500).json({
       success: false,
