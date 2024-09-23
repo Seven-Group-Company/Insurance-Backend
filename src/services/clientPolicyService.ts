@@ -415,6 +415,7 @@ export class ClientPolicyManagenetService {
             },
           },
         },
+        client_details: true,
       },
     });
   };

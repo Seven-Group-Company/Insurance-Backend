@@ -35,15 +35,16 @@ model users {
   client_policy   client_policy[]
 
   // user Info
-  firstName     String?
-  lastName      String?
-  otherName     String?
-  dateOfBirth   String?
-  gender        String?
-  maritalStatus maritalStatus?
-  nationality   String?
-  phone         String?
-  address       String?
+  firstName      String?
+  lastName       String?
+  otherName      String?
+  dateOfBirth    String?
+  gender         String?
+  maritalStatus  maritalStatus?
+  nationality    String?
+  phone          String?
+  address        String?
+  client_details client_policy[] @relation("client_details")
 }
 
 model employeeInfo {
@@ -183,6 +184,7 @@ enum policyStatus {
 model client_policy {
   id               Int                @id @default(autoincrement())
   client_email     String?
+  client_details   users?             @relation("client_details", fields: [client_email], references: [email])
   policy_id        Int?
   policy           policy?            @relation(fields: [policy_id], references: [id])
   date_enrolled    DateTime           @default(now())
