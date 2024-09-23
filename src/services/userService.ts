@@ -22,7 +22,17 @@ const selectQuery = {
   name: true,
   userType: true,
   photo: true,
+  firstName: true,
+  lastName: true,
+  otherName: true,
+  dateOfBirth: true,
+  gender: true,
+  maritalStatus: true,
+  nationality: true,
+  phone: true,
+  address: true,
   employeeInfo: true,
+  clientInfo: true,
   accessLevel: {
     select: {
       id: true,
@@ -92,17 +102,18 @@ export class UserService {
           photo,
           positionId: Number(positionId),
           accessLevelId: Number(accessLevelId),
+          firstName,
+          lastName,
+          otherName,
+          address,
+          dateOfBirth,
+          gender,
+          maritalStatus,
+          nationality,
+          phone,
           employeeInfo: {
             create: {
-              firstName,
-              lastName,
-              otherName,
-              address,
-              dateOfBirth,
-              gender,
-              maritalStatus,
-              nationality,
-              phone,
+              isAgent: false,
             },
           },
           mfa: {
@@ -115,6 +126,7 @@ export class UserService {
         },
         select: {
           employeeInfo: true,
+          clientInfo: true,
         },
       });
       const emailData = {
@@ -205,15 +217,21 @@ export class UserService {
             name: `${firstName} ${otherName} ${lastName}`,
             createdBy: 1,
             userType: "client",
+            firstName,
+            lastName,
+            otherName,
+            dateOfBirth,
+            gender,
+            maritalStatus,
+            phone,
+            employeeInfo: {
+              create: {
+                isAgent: false,
+              },
+            },
             clientInfo: {
               create: {
-                firstName,
-                lastName,
-                otherName,
-                dateOfBirth,
-                gender,
-                maritalStatus,
-                phone,
+                isTempUser: true,
               },
             },
             mfa: {
@@ -233,6 +251,7 @@ export class UserService {
           select: {
             id: true,
             clientInfo: true,
+            employeeInfo: true,
             client_policy: {
               select: {
                 id: true,
@@ -283,7 +302,6 @@ export class UserService {
         data: null,
       });
     } catch (error) {
-      console.log(error);
       res.status(500).json({
         success: false,
         statusCode: 500,
@@ -334,24 +352,20 @@ export class UserService {
           positionId: positionId ? Number(positionId) : existance.position.id,
           updatedBy: Number(req?.user.id),
           updatedAt: new Date(),
+          firstName,
+          lastName,
+          otherName,
+          address: address ? address : existance.address,
+          dateOfBirth: dateOfBirth ? dateOfBirth : existance.dateOfBirth,
+
+          gender: gender ? gender : existance.gender,
+          maritalStatus: maritalStatus
+            ? maritalStatus
+            : existance.maritalStatus,
+          nationality: nationality ? nationality : existance.nationality,
+          phone: phone ? phone : existance.phone,
           employeeInfo: {
             update: {
-              firstName,
-              lastName,
-              otherName,
-              address: address ? address : existance.employeeInfo.address,
-              dateOfBirth: dateOfBirth
-                ? dateOfBirth
-                : existance.employeeInfo.dateOfBirth,
-
-              gender: gender ? gender : existance.employeeInfo.gender,
-              maritalStatus: maritalStatus
-                ? maritalStatus
-                : existance.employeeInfo.maritalStatus,
-              nationality: nationality
-                ? nationality
-                : existance.employeeInfo.nationality,
-              phone: phone ? phone : existance.employeeInfo.phone,
               isAgent: isAgent ? isAgent : existance.employeeInfo.isAgent,
             },
           },
@@ -377,7 +391,7 @@ export class UserService {
   };
   deleteUser = async (req: any, res: Response) => {
     try {
-      const { email, updatedBy }: UserInterface = req.body;
+      const { email }: UserInterface = req.body;
       const user = await prisma.users.update({
         where: {
           email,
@@ -928,20 +942,11 @@ export class UserService {
   };
 
   private generateToken = async (data) => {
-    let onboarding = false;
-    if (data.userType === "admin") {
-      onboarding = false;
-    } else {
-      if (
-        data.employeeInfo.dateOfBirth === "null" ||
-        data.employeeInfo.dateOfBirth === null ||
-        data.employeeInfo.dateOfBirth === ""
-      ) {
-        onboarding = true;
-      }
-    }
+    const onboarding =
+      data.userType !== "admin" &&
+      (!data.dateOfBirth || data.dateOfBirth === "null");
 
-    return await JWT.sign(
+    return JWT.sign(
       {
         id: data.id,
         name: data.name,
@@ -959,4 +964,37 @@ export class UserService {
       }
     );
   };
+
+  // private generateToken = async (data) => {
+  //   let onboarding = false;
+  //   if (data.userType === "admin") {
+  //     onboarding = false;
+  //   } else {
+  //     if (
+  //       data.dateOfBirth === "null" ||
+  //       data.dateOfBirth === null ||
+  //       data.dateOfBirth === ""
+  //     ) {
+  //       onboarding = true;
+  //     }
+  //   }
+
+  //   return await JWT.sign(
+  //     {
+  //       id: data.id,
+  //       name: data.name,
+  //       email: data.email,
+  //       photo: data.photo,
+  //       userType: data.userType,
+  //       isAgent: data?.employeeInfo?.isAgent,
+  //       accessLevel: data.accessLevel,
+  //       position: data.userType === "admin" ? "admin" : data.position?.name,
+  //       onboarding,
+  //     },
+  //     process.env.JWT_SECRET,
+  //     {
+  //       expiresIn: "24h",
+  //     }
+  //   );
+  // };
 }

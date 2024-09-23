@@ -8,8 +8,11 @@ type Policy = {
 export const findPolicyWithLeastObjects = async () => {
   const avaliableAgents = await prisma.users.findMany({
     where: {
-      employeeInfo: {
-        isAgent: true,
+      AND: {
+        active: true,
+        employeeInfo: {
+          isAgent: true,
+        },
       },
     },
     select: {

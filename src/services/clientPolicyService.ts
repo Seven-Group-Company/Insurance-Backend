@@ -126,6 +126,9 @@ export class ClientPolicyManagenetService {
               },
             },
           },
+          include: {
+            client_files: true,
+          },
         });
         // Delete local file after upload to Cloudinary
         fs.unlinkSync(file.path);
@@ -138,14 +141,47 @@ export class ClientPolicyManagenetService {
     }
   };
 
+  deleteFile = async (req: any, res: Response) => {
+    try {
+      const { client_file_id } = req.body;
+
+      //   Check Existance
+      const existance = await prisma.client_files.findFirst({
+        where: {
+          id: Number(client_file_id),
+        },
+      });
+      if (!existance) {
+        return sendResponse[404](res, "Client Policy file record not Found");
+      }
+
+      await prisma.client_files.delete({
+        where: {
+          id: Number(client_file_id),
+        },
+      });
+
+      await prisma.attachments.delete({
+        where: {
+          id: Number(existance.attachment_id),
+        },
+      });
+
+      sendResponse[200](res, null);
+    } catch (error) {
+      return sendResponse[500](res, error.message);
+    }
+  };
+
   agentDashboard = async (req: any, res: Response) => {
     try {
       const agent_id = req?.user.id;
+      const { status } = req.query;
 
       if (req?.user.userType === "admin")
-        return sendResponse[200](res, await this.listClientPolicy());
+        return sendResponse[200](res, await this.listClientPolicy(status));
 
-      const data = await this.listClientPolicy(agent_id);
+      const data = await this.listClientPolicy(status, agent_id);
 
       return sendResponse[200](res, data);
     } catch (error) {
@@ -156,9 +192,13 @@ export class ClientPolicyManagenetService {
   clientDashboard = async (req: any, res: Response) => {
     try {
       const { email } = req?.user;
+      const { status } = req.query;
       const data = await prisma.client_policy.findMany({
         where: {
-          client_email: email,
+          AND: {
+            client_email: email,
+            status,
+          },
         },
         include: {
           policy: true,
@@ -309,16 +349,72 @@ export class ClientPolicyManagenetService {
     }
   };
 
-  private listClientPolicy = async (agent_id = undefined) => {
-    console.log(agent_id);
+  getPolicyDetails = async (req: any, res: Response) => {
+    try {
+      const { client_policy_id } = req.query;
+
+      // Validations
+      const validateInput = validator.confirmPolicy.validate(req.query);
+      if (validateInput.error) {
+        return sendResponse[400](res, `${validateInput.error.message}`);
+      }
+
+      const checkPolicyExistance = await prisma.client_policy.findFirst({
+        where: {
+          AND: {
+            id: Number(client_policy_id),
+          },
+        },
+        include: {
+          agent: true,
+          client_files: {
+            select: {
+              attachment: {
+                select: {
+                  url: true,
+                  name: true,
+                  size: true,
+                  type: true,
+                },
+              },
+            },
+          },
+          policy: true,
+        },
+      });
+
+      if (!checkPolicyExistance) {
+        return sendResponse[404](res, "Policy Does not exit");
+      }
+
+      sendResponse[200](res, checkPolicyExistance);
+    } catch (error) {
+      return sendResponse[500](res, error.message);
+    }
+  };
+
+  private listClientPolicy = async (status, agent_id = undefined) => {
     return await prisma.client_policy.findMany({
       where: {
-        agent_id: agent_id ? Number(agent_id) : undefined,
+        AND: {
+          agent_id: agent_id ? Number(agent_id) : undefined,
+          status,
+        },
       },
       include: {
         policy: true,
-        client_files: true,
-        user: true,
+        client_files: {
+          select: {
+            attachment: {
+              select: {
+                url: true,
+                name: true,
+                size: true,
+                type: true,
+              },
+            },
+          },
+        },
       },
     });
   };

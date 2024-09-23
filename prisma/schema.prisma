@@ -33,39 +33,29 @@ model users {
   policyUpdatedBy policy[]        @relation("policyUpdatedBy")
   clientInfo      clientInfo?
   client_policy   client_policy[]
+
+  // user Info
+  firstName     String?
+  lastName      String?
+  otherName     String?
+  dateOfBirth   String?
+  gender        String?
+  maritalStatus maritalStatus?
+  nationality   String?
+  phone         String?
+  address       String?
 }
 
 model employeeInfo {
-  id            Int            @id @default(autoincrement())
-  firstName     String?
-  lastName      String?
-  otherName     String?
-  dateOfBirth   String?
-  gender        String?
-  maritalStatus maritalStatus?
-  nationality   String?
-  phone         String?
-  address       String?
-  email         String         @unique
-  isAgent       Boolean        @default(false)
-  user          users          @relation(fields: [email], references: [email])
+  email   String  @unique
+  isAgent Boolean @default(false)
+  user    users   @relation(fields: [email], references: [email])
 }
 
 model clientInfo {
-  id            Int             @id @default(autoincrement())
-  firstName     String?
-  lastName      String?
-  otherName     String?
-  dateOfBirth   String?
-  gender        String?
-  maritalStatus maritalStatus?
-  nationality   String?
-  phone         String?
-  address       String?
-  email         String          @unique
-  isTempUser    Boolean         @default(true)
-  user          users           @relation(fields: [email], references: [email])
-  client_policy client_policy[]
+  email      String  @unique
+  isTempUser Boolean @default(true)
+  user       users   @relation(fields: [email], references: [email])
 }
 
 model otp {
@@ -193,7 +183,6 @@ enum policyStatus {
 model client_policy {
   id               Int                @id @default(autoincrement())
   client_email     String?
-  user             clientInfo?        @relation(fields: [client_email], references: [email])
   policy_id        Int?
   policy           policy?            @relation(fields: [policy_id], references: [id])
   date_enrolled    DateTime           @default(now())

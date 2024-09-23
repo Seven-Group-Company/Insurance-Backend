@@ -29,6 +29,12 @@ const clientPolicy = new ClientPolicyManagenetService();
 
 clientPolicyRouter.get("/view-client-policy", clientPolicy.viewClientPolicy);
 
+clientPolicyRouter.get(
+  "/get-client-policy-details",
+  [permission.protect],
+  clientPolicy.getPolicyDetails
+);
+
 clientPolicyRouter.post(
   "/create-client-policy",
   clientPolicy.createClientPolicy
@@ -68,6 +74,12 @@ clientPolicyRouter.put(
   "/confirm-policy",
   [permission.protect],
   clientPolicy.confirmPolicy
+);
+
+clientPolicyRouter.delete(
+  "/delete-policy-file",
+  [permission.protect],
+  clientPolicy.deleteFile
 );
 
 clientPolicyRouter.post("/upload-file", [upload1], clientPolicy.uploadFile);

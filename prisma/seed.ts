@@ -26,9 +26,12 @@ const seedUser = async () => {
         },
         employeeInfo: {
           create: {
-            id: 1,
-            firstName: "Super",
-            lastName: "Admin",
+            isAgent: false,
+          },
+        },
+        clientInfo: {
+          create: {
+            isTempUser: false,
           },
         },
       },
