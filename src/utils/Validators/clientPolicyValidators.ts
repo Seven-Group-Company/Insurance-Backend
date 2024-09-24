@@ -27,6 +27,12 @@ export default class ClientPolicyValidator {
       .required(),
   });
 
+  agentPolicy = Joi.object({
+    status: Joi.string()
+      .valid(...statusEnum)
+      .required(),
+  });
+
   rejectPolicy = Joi.object({
     client_policy_id: Joi.required(),
     rejection_policy: Joi.string().required(),

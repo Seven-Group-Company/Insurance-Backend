@@ -70,11 +70,7 @@ clientPolicyRouter.put(
   clientPolicy.rejectPolicy
 );
 
-clientPolicyRouter.put(
-  "/confirm-policy",
-  [permission.protect],
-  clientPolicy.confirmPolicy
-);
+clientPolicyRouter.put("/confirm-policy", clientPolicy.confirmPolicy);
 
 clientPolicyRouter.delete(
   "/delete-policy-file",

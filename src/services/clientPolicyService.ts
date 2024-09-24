@@ -25,6 +25,11 @@ export class ClientPolicyManagenetService {
             policy_id: Number(policy_id),
           },
         },
+        include: {
+          client_details: true,
+          client_files: true,
+          policy: true,
+        },
       });
 
       if (data) return sendResponse[200](res, data);
@@ -143,7 +148,7 @@ export class ClientPolicyManagenetService {
 
   deleteFile = async (req: any, res: Response) => {
     try {
-      const { client_file_id } = req.body;
+      const { client_file_id } = req.query;
 
       //   Check Existance
       const existance = await prisma.client_files.findFirst({
@@ -178,6 +183,12 @@ export class ClientPolicyManagenetService {
       const agent_id = req?.user.id;
       const { status } = req.query;
 
+      // Validations
+      const validateInput = validator.agentPolicy.validate(req.query);
+      if (validateInput.error) {
+        return sendResponse[400](res, `${validateInput.error.message}`);
+      }
+
       if (req?.user.userType === "admin")
         return sendResponse[200](res, await this.listClientPolicy(status));
 
@@ -193,6 +204,13 @@ export class ClientPolicyManagenetService {
     try {
       const { email } = req?.user;
       const { status } = req.query;
+
+      // Validations
+      const validateInput = validator.agentPolicy.validate(req.query);
+      if (validateInput.error) {
+        return sendResponse[400](res, `${validateInput.error.message}`);
+      }
+      
       const data = await prisma.client_policy.findMany({
         where: {
           AND: {
@@ -380,6 +398,7 @@ export class ClientPolicyManagenetService {
             },
           },
           policy: true,
+          client_details: true,
         },
       });
 
