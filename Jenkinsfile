@@ -9,7 +9,7 @@ pipeline {
 
     stage('Log') {
       steps {
-        sh 'ls -a'
+        sh 'ls -a && yarn insall'
       }
     }
 
