@@ -1,17 +1,39 @@
 pipeline {
-  agent any
-  stages {
-    stage('Checkout code') {
+    agent {
+        label 'win-agent'
+    }
+    triggers {
+        pollSCM '* * * * *'
+    }
+    environment {
+      scannerHome = tool name: 'sonarscanner'
+    }
+    stages {
+        stage('Install Packages') {
       steps {
-        git(url: 'https://github.com/Seven-Group-Company/Insurance-Backend', branch: 'develop')
+        echo 'Install Dependencies'
+        sh 'npm install'
+      }
+        }
+
+        stage('Test') {
+      steps {
+        sh 'ls -a'
+      }
+        }
+
+    stage('SonarQube Analysis') {
+      steps {
+        withSonarQubeEnv('sonarqube_server') {
+          bat "${scannerHome}\\bin\\sonar-scanner"
+        }
       }
     }
 
-    stage('Log') {
+    stage('CleanUp WS') {
       steps {
-        sh 'ls -a && yarn insall'
+        cleanWs()
       }
     }
-
-  }
+    }
 }
