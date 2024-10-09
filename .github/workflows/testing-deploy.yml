@@ -16,4 +16,4 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd /home/ubuntu/scripts && \
-            sudo bash insurance-deploy.sh
+            sudo bash deploy-backend.sh
