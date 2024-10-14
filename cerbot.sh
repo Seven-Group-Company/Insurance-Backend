@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Variables
+# Variables name
 DOMAIN="sgc.greatsohis.online"
 EMAIL="emmanueleshunjnr@gmail.com"
 
