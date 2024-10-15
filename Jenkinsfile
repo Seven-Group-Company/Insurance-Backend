@@ -7,7 +7,7 @@ pipeline {
     }
     environment {
       scannerHome = tool name: 'sonarscanner'
-      EC2_INSTANCE_IP = 'EC2_INSTANCE_IP'
+      EC2_INSTANCE_IP = 'ec2_ip'
       SSH_KEY_ID = 'sgc_ssh_pk'
       SSH_USER = 'ubuntu'
     }
