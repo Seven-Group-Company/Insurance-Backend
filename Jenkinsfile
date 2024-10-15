@@ -35,7 +35,8 @@ pipeline {
                             echo "Successfully logged into EC2 instance!"
                             # Run any commands you need here, e.g., update, start services, etc.
                             uptime
-                            ll
+                            cd /home/ubuntu/scripts
+                            sudo bash deploy-backend.sh
                         EOF
                         """
           }
