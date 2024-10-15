@@ -24,5 +24,5 @@ app.use("/policy", policyRouter);
 app.use("/client-policy", clientPolicyRouter);
 
 app.listen(port, () => {
-  return console.log(`App is listening at http://localhost:${port}`);
+  return console.log(`App is Live at http://localhost:${port}`);
 });
